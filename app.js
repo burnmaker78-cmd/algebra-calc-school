@@ -19,30 +19,27 @@ const status = document.getElementById("status");
 
 
 /* =========================
-   PROXY SERVER
+   RAILWAY SERVER
    ========================= */
 
-/*
-    LOCAL:
-    When running server.js on your Chromebook:
-        http://localhost:3000
+const ONLINE_PROXY_SERVER =
+    "https://algebra-calc-school-production.up.railway.app";
 
-    ONLINE:
-    Replace the URL below with your deployed Node server.
 
-    Example:
-        https://miguel-proxy.onrender.com
-*/
-
-const ONLINE_PROXY_SERVER = "https://YOUR-SERVER-NAME.onrender.com";
+/* =========================
+   GET SERVER
+   ========================= */
 
 function getProxyServer() {
-    const hostname = window.location.hostname;
+
+    const hostname =
+        window.location.hostname;
 
     /*
-        If the frontend is running locally,
-        use the local Express server.
+        When running locally with:
+        node server.js
     */
+
     if (
         hostname === "localhost" ||
         hostname === "127.0.0.1"
@@ -51,14 +48,36 @@ function getProxyServer() {
     }
 
     /*
-        Otherwise use the deployed server.
+        When running on GitHub Pages,
+        use the Railway backend.
     */
-    return ONLINE_PROXY_SERVER.replace(/\/+$/, "");
+
+    return ONLINE_PROXY_SERVER.replace(
+        /\/+$/,
+        ""
+    );
 }
 
 
 /* =========================
-   TABS
+   BUILD PROXY URL
+   ========================= */
+
+function getProxyUrl(targetUrl) {
+
+    const proxyServer =
+        getProxyServer();
+
+    return (
+        proxyServer +
+        "/proxy?url=" +
+        encodeURIComponent(targetUrl)
+    );
+}
+
+
+/* =========================
+   TAB STATE
    ========================= */
 
 let tabs = [
@@ -81,6 +100,7 @@ let nextTabId = 2;
    ========================= */
 
 function normalizeUrl(value) {
+
     value = value.trim();
 
     if (!value) {
@@ -102,7 +122,8 @@ function normalizeUrl(value) {
         !value.startsWith("http://") &&
         !value.startsWith("https://")
     ) {
-        value = "https://" + value;
+        value =
+            "https://" + value;
     }
 
     return value;
@@ -114,21 +135,9 @@ function normalizeUrl(value) {
    ========================= */
 
 function getActiveTab() {
-    return tabs.find(tab => tab.id === activeTab);
-}
 
-
-/* =========================
-   BUILD PROXY URL
-   ========================= */
-
-function getProxyUrl(targetUrl) {
-    const proxyServer = getProxyServer();
-
-    return (
-        proxyServer +
-        "/proxy?url=" +
-        encodeURIComponent(targetUrl)
+    return tabs.find(
+        tab => tab.id === activeTab
     );
 }
 
@@ -137,44 +146,67 @@ function getProxyUrl(targetUrl) {
    NAVIGATE
    ========================= */
 
-function navigate(url, addHistory = true) {
-    const tab = getActiveTab();
+function navigate(
+    url,
+    addHistory = true
+) {
+
+    const tab =
+        getActiveTab();
 
     if (!tab) {
         return;
     }
 
-    const finalUrl = normalizeUrl(url);
+    const finalUrl =
+        normalizeUrl(url);
 
     if (!finalUrl) {
         return;
     }
 
-    homePage.style.display = "none";
-    pageView.classList.remove("hidden");
+    homePage.style.display =
+        "none";
 
-    pageLoading.classList.remove("hidden");
+    pageView.classList.remove(
+        "hidden"
+    );
 
-    status.textContent = "Connecting...";
+    pageLoading.classList.remove(
+        "hidden"
+    );
 
-    urlInput.value = finalUrl;
+    status.textContent =
+        "Connecting...";
+
+    urlInput.value =
+        finalUrl;
 
     if (addHistory) {
-        tab.history = tab.history.slice(
-            0,
-            tab.historyIndex + 1
-        );
 
-        tab.history.push(finalUrl);
+        tab.history =
+            tab.history.slice(
+                0,
+                tab.historyIndex + 1
+            );
+
+        tab.history.push(
+            finalUrl
+        );
 
         tab.historyIndex++;
     }
 
-    tab.url = finalUrl;
+    tab.url =
+        finalUrl;
 
-    updateTabTitle(tab, finalUrl);
+    updateTabTitle(
+        tab,
+        finalUrl
+    );
 
-    pageFrame.src = getProxyUrl(finalUrl);
+    pageFrame.src =
+        getProxyUrl(finalUrl);
 
     renderTabs();
 }
@@ -184,40 +216,69 @@ function navigate(url, addHistory = true) {
    PAGE LOADED
    ========================= */
 
-pageFrame.addEventListener("load", () => {
-    pageLoading.classList.add("hidden");
+pageFrame.addEventListener(
+    "load",
+    () => {
 
-    status.textContent = "Connected";
-});
+        pageLoading.classList.add(
+            "hidden"
+        );
+
+        status.textContent =
+            "Connected";
+    }
+);
 
 
 /* =========================
    PAGE ERROR
    ========================= */
 
-pageFrame.addEventListener("error", () => {
-    pageLoading.classList.add("hidden");
+pageFrame.addEventListener(
+    "error",
+    () => {
 
-    status.textContent = "Connection error";
-});
+        pageLoading.classList.add(
+            "hidden"
+        );
+
+        status.textContent =
+            "Connection error";
+    }
+);
 
 
 /* =========================
    TAB TITLE
    ========================= */
 
-function updateTabTitle(tab, url) {
+function updateTabTitle(
+    tab,
+    url
+) {
+
     try {
-        const parsed = new URL(url);
 
-        let hostname = parsed.hostname;
+        const parsed =
+            new URL(url);
 
-        hostname = hostname.replace(/^www\./, "");
+        let hostname =
+            parsed.hostname;
 
-        tab.title = hostname || "Website";
+        hostname =
+            hostname.replace(
+                /^www\./,
+                ""
+            );
+
+        tab.title =
+            hostname ||
+            "Website";
 
     } catch {
-        tab.title = "Website";
+
+        tab.title =
+            "Website";
     }
 }
 
@@ -226,96 +287,149 @@ function updateTabTitle(tab, url) {
    BACK
    ========================= */
 
-backBtn.addEventListener("click", () => {
-    const tab = getActiveTab();
+backBtn.addEventListener(
+    "click",
+    () => {
 
-    if (!tab) {
-        return;
+        const tab =
+            getActiveTab();
+
+        if (!tab) {
+            return;
+        }
+
+        if (
+            tab.historyIndex > 0
+        ) {
+
+            tab.historyIndex--;
+
+            const previousUrl =
+                tab.history[
+                    tab.historyIndex
+                ];
+
+            tab.url =
+                previousUrl;
+
+            urlInput.value =
+                previousUrl;
+
+            pageLoading.classList.remove(
+                "hidden"
+            );
+
+            status.textContent =
+                "Going back...";
+
+            pageFrame.src =
+                getProxyUrl(
+                    previousUrl
+                );
+        }
     }
-
-    if (tab.historyIndex > 0) {
-        tab.historyIndex--;
-
-        const previousUrl =
-            tab.history[tab.historyIndex];
-
-        tab.url = previousUrl;
-
-        urlInput.value = previousUrl;
-
-        pageLoading.classList.remove("hidden");
-
-        status.textContent = "Going back...";
-
-        pageFrame.src =
-            getProxyUrl(previousUrl);
-    }
-});
+);
 
 
 /* =========================
    FORWARD
    ========================= */
 
-forwardBtn.addEventListener("click", () => {
-    const tab = getActiveTab();
+forwardBtn.addEventListener(
+    "click",
+    () => {
 
-    if (!tab) {
-        return;
+        const tab =
+            getActiveTab();
+
+        if (!tab) {
+            return;
+        }
+
+        if (
+            tab.historyIndex <
+            tab.history.length - 1
+        ) {
+
+            tab.historyIndex++;
+
+            const nextUrl =
+                tab.history[
+                    tab.historyIndex
+                ];
+
+            tab.url =
+                nextUrl;
+
+            urlInput.value =
+                nextUrl;
+
+            pageLoading.classList.remove(
+                "hidden"
+            );
+
+            status.textContent =
+                "Going forward...";
+
+            pageFrame.src =
+                getProxyUrl(
+                    nextUrl
+                );
+        }
     }
-
-    if (
-        tab.historyIndex <
-        tab.history.length - 1
-    ) {
-        tab.historyIndex++;
-
-        const nextUrl =
-            tab.history[tab.historyIndex];
-
-        tab.url = nextUrl;
-
-        urlInput.value = nextUrl;
-
-        pageLoading.classList.remove("hidden");
-
-        status.textContent = "Going forward...";
-
-        pageFrame.src =
-            getProxyUrl(nextUrl);
-    }
-});
+);
 
 
 /* =========================
    RELOAD
    ========================= */
 
-reloadBtn.addEventListener("click", () => {
-    const tab = getActiveTab();
+reloadBtn.addEventListener(
+    "click",
+    () => {
 
-    if (!tab || !tab.url) {
-        return;
+        const tab =
+            getActiveTab();
+
+        if (
+            !tab ||
+            !tab.url
+        ) {
+            return;
+        }
+
+        pageLoading.classList.remove(
+            "hidden"
+        );
+
+        status.textContent =
+            "Reloading...";
+
+        pageFrame.src =
+            getProxyUrl(
+                tab.url
+            );
     }
-
-    pageLoading.classList.remove("hidden");
-
-    status.textContent = "Reloading...";
-
-    pageFrame.src =
-        getProxyUrl(tab.url);
-});
+);
 
 
 /* =========================
    ADDRESS BAR
    ========================= */
 
-urlInput.addEventListener("keydown", event => {
-    if (event.key === "Enter") {
-        navigate(urlInput.value);
+urlInput.addEventListener(
+    "keydown",
+    event => {
+
+        if (
+            event.key === "Enter"
+        ) {
+            navigate(
+                urlInput.value
+            );
+        }
     }
-});
+);
 
 
 /* =========================
@@ -323,7 +437,9 @@ urlInput.addEventListener("keydown", event => {
    ========================= */
 
 function performSearch() {
-    const value = searchInput.value.trim();
+
+    const value =
+        searchInput.value.trim();
 
     if (!value) {
         return;
@@ -331,7 +447,8 @@ function performSearch() {
 
     navigate(value);
 
-    searchInput.value = "";
+    searchInput.value =
+        "";
 }
 
 searchBtn.addEventListener(
@@ -342,7 +459,10 @@ searchBtn.addEventListener(
 searchInput.addEventListener(
     "keydown",
     event => {
-        if (event.key === "Enter") {
+
+        if (
+            event.key === "Enter"
+        ) {
             performSearch();
         }
     }
@@ -354,12 +474,20 @@ searchInput.addEventListener(
    ========================= */
 
 document
-    .querySelectorAll(".quick-link[data-url]")
+    .querySelectorAll(
+        ".quick-link[data-url]"
+    )
     .forEach(button => {
 
-        button.addEventListener("click", () => {
-            navigate(button.dataset.url);
-        });
+        button.addEventListener(
+            "click",
+            () => {
+
+                navigate(
+                    button.dataset.url
+                );
+            }
+        );
 
     });
 
@@ -371,25 +499,41 @@ document
 function createTab() {
 
     const newTab = {
+
         id: nextTabId++,
-        title: "New Tab",
-        url: "",
-        history: [],
-        historyIndex: -1,
-        favorite: false
+
+        title:
+            "New Tab",
+
+        url:
+            "",
+
+        history:
+            [],
+
+        historyIndex:
+            -1,
+
+        favorite:
+            false
     };
 
-    tabs.push(newTab);
+    tabs.push(
+        newTab
+    );
 
-    activeTab = newTab.id;
+    activeTab =
+        newTab.id;
 
     showHome();
 
     renderTabs();
 
-    urlInput.value = "";
+    urlInput.value =
+        "";
 
-    status.textContent = "Ready";
+    status.textContent =
+        "Ready";
 }
 
 newTabBtn.addEventListener(
@@ -404,17 +548,29 @@ newTabBtn.addEventListener(
 
 function closeTab(id) {
 
-    if (tabs.length === 1) {
+    if (
+        tabs.length === 1
+    ) {
 
         showHome();
 
-        tabs[0].title = "Miguel Games";
-        tabs[0].url = "";
-        tabs[0].history = [];
-        tabs[0].historyIndex = -1;
-        tabs[0].favorite = false;
+        tabs[0].title =
+            "Miguel Games";
 
-        favoriteBtn.textContent = "☆";
+        tabs[0].url =
+            "";
+
+        tabs[0].history =
+            [];
+
+        tabs[0].historyIndex =
+            -1;
+
+        tabs[0].favorite =
+            false;
+
+        favoriteBtn.textContent =
+            "☆";
 
         renderTabs();
 
@@ -422,16 +578,24 @@ function closeTab(id) {
     }
 
     const index =
-        tabs.findIndex(tab => tab.id === id);
+        tabs.findIndex(
+            tab => tab.id === id
+        );
 
-    tabs = tabs.filter(
-        tab => tab.id !== id
-    );
+    tabs =
+        tabs.filter(
+            tab => tab.id !== id
+        );
 
-    if (id === activeTab) {
+    if (
+        id === activeTab
+    ) {
 
         const newIndex =
-            Math.max(0, index - 1);
+            Math.max(
+                0,
+                index - 1
+            );
 
         activeTab =
             tabs[newIndex].id;
@@ -440,8 +604,14 @@ function closeTab(id) {
             getActiveTab();
 
         if (tab.url) {
-            navigate(tab.url, false);
+
+            navigate(
+                tab.url,
+                false
+            );
+
         } else {
+
             showHome();
         }
     }
@@ -450,28 +620,38 @@ function closeTab(id) {
 }
 
 
+/* =========================
+   SWITCH TAB
+   ========================= */
+
 function switchTab(id) {
 
-    activeTab = id;
+    activeTab =
+        id;
 
-    const tab = getActiveTab();
+    const tab =
+        getActiveTab();
 
     if (!tab) {
         return;
     }
 
     favoriteBtn.textContent =
-        tab.favorite ? "★" : "☆";
+        tab.favorite
+            ? "★"
+            : "☆";
 
     if (tab.url) {
 
-        homePage.style.display = "none";
+        homePage.style.display =
+            "none";
 
         pageView.classList.remove(
             "hidden"
         );
 
-        urlInput.value = tab.url;
+        urlInput.value =
+            tab.url;
 
         pageLoading.classList.remove(
             "hidden"
@@ -481,12 +661,13 @@ function switchTab(id) {
             "Connecting...";
 
         pageFrame.src =
-            getProxyUrl(tab.url);
+            getProxyUrl(
+                tab.url
+            );
 
     } else {
 
         showHome();
-
     }
 
     renderTabs();
@@ -499,21 +680,28 @@ function switchTab(id) {
 
 function renderTabs() {
 
-    tabsContainer.innerHTML = "";
+    tabsContainer.innerHTML =
+        "";
 
     tabs.forEach(tab => {
 
         const tabElement =
-            document.createElement("div");
+            document.createElement(
+                "div"
+            );
 
         tabElement.className =
             "tab" +
-            (tab.id === activeTab
-                ? " active"
-                : "");
+            (
+                tab.id === activeTab
+                    ? " active"
+                    : ""
+            );
 
         const icon =
-            document.createElement("span");
+            document.createElement(
+                "span"
+            );
 
         icon.textContent =
             tab.favorite
@@ -521,18 +709,23 @@ function renderTabs() {
                 : "🌐";
 
         const title =
-            document.createElement("span");
+            document.createElement(
+                "span"
+            );
 
         title.textContent =
             tab.title;
 
         const close =
-            document.createElement("button");
+            document.createElement(
+                "button"
+            );
 
         close.className =
             "close-tab";
 
-        close.textContent = "×";
+        close.textContent =
+            "×";
 
         close.addEventListener(
             "click",
@@ -540,17 +733,32 @@ function renderTabs() {
 
                 event.stopPropagation();
 
-                closeTab(tab.id);
+                closeTab(
+                    tab.id
+                );
             }
         );
 
-        tabElement.appendChild(icon);
-        tabElement.appendChild(title);
-        tabElement.appendChild(close);
+        tabElement.appendChild(
+            icon
+        );
+
+        tabElement.appendChild(
+            title
+        );
+
+        tabElement.appendChild(
+            close
+        );
 
         tabElement.addEventListener(
             "click",
-            () => switchTab(tab.id)
+            () => {
+
+                switchTab(
+                    tab.id
+                );
+            }
         );
 
         tabsContainer.appendChild(
@@ -559,11 +767,15 @@ function renderTabs() {
     });
 
     const addButton =
-        document.createElement("button");
+        document.createElement(
+            "button"
+        );
 
-    addButton.className = "add-tab";
+    addButton.className =
+        "add-tab";
 
-    addButton.textContent = "＋";
+    addButton.textContent =
+        "＋";
 
     addButton.addEventListener(
         "click",
@@ -582,7 +794,8 @@ function renderTabs() {
 
 function showHome() {
 
-    homePage.style.display = "flex";
+    homePage.style.display =
+        "flex";
 
     pageView.classList.add(
         "hidden"
@@ -591,12 +804,22 @@ function showHome() {
     pageFrame.src =
         "about:blank";
 
-    urlInput.value = "";
+    urlInput.value =
+        "";
+
+    const tab =
+        getActiveTab();
+
+    if (tab) {
+
+        favoriteBtn.textContent =
+            tab.favorite
+                ? "★"
+                : "☆";
+    }
 
     status.textContent =
         "Ready";
-
-    favoriteBtn.textContent = "☆";
 }
 
 
@@ -640,9 +863,11 @@ document.addEventListener(
             event.ctrlKey &&
             event.key.toLowerCase() === "l"
         ) {
+
             event.preventDefault();
 
             urlInput.focus();
+
             urlInput.select();
         }
 
@@ -650,6 +875,7 @@ document.addEventListener(
             event.ctrlKey &&
             event.key.toLowerCase() === "r"
         ) {
+
             event.preventDefault();
 
             reloadBtn.click();
@@ -659,6 +885,7 @@ document.addEventListener(
             event.ctrlKey &&
             event.key.toLowerCase() === "t"
         ) {
+
             event.preventDefault();
 
             createTab();
@@ -668,9 +895,12 @@ document.addEventListener(
             event.ctrlKey &&
             event.key.toLowerCase() === "w"
         ) {
+
             event.preventDefault();
 
-            closeTab(activeTab);
+            closeTab(
+                activeTab
+            );
         }
     }
 );
@@ -685,5 +915,5 @@ renderTabs();
 showHome();
 
 console.log(
-    "Miguel Games proxy viewer loaded."
+    "Miguel Games viewer loaded."
 );
