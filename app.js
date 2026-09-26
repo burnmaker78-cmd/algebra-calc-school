@@ -17,6 +17,50 @@ const favoriteBtn = document.getElementById("favoriteBtn");
 const tabsContainer = document.getElementById("tabs");
 const status = document.getElementById("status");
 
+
+/* =========================
+   PROXY SERVER
+   ========================= */
+
+/*
+    LOCAL:
+    When running server.js on your Chromebook:
+        http://localhost:3000
+
+    ONLINE:
+    Replace the URL below with your deployed Node server.
+
+    Example:
+        https://miguel-proxy.onrender.com
+*/
+
+const ONLINE_PROXY_SERVER = "https://YOUR-SERVER-NAME.onrender.com";
+
+function getProxyServer() {
+    const hostname = window.location.hostname;
+
+    /*
+        If the frontend is running locally,
+        use the local Express server.
+    */
+    if (
+        hostname === "localhost" ||
+        hostname === "127.0.0.1"
+    ) {
+        return "http://localhost:3000";
+    }
+
+    /*
+        Otherwise use the deployed server.
+    */
+    return ONLINE_PROXY_SERVER.replace(/\/+$/, "");
+}
+
+
+/* =========================
+   TABS
+   ========================= */
+
 let tabs = [
     {
         id: 1,
@@ -48,8 +92,10 @@ function normalizeUrl(value) {
         !value.startsWith("http://") &&
         !value.startsWith("https://")
     ) {
-        return "https://www.google.com/search?q=" +
-            encodeURIComponent(value);
+        return (
+            "https://www.google.com/search?q=" +
+            encodeURIComponent(value)
+        );
     }
 
     if (
@@ -77,7 +123,13 @@ function getActiveTab() {
    ========================= */
 
 function getProxyUrl(targetUrl) {
-    return "/proxy?url=" + encodeURIComponent(targetUrl);
+    const proxyServer = getProxyServer();
+
+    return (
+        proxyServer +
+        "/proxy?url=" +
+        encodeURIComponent(targetUrl)
+    );
 }
 
 
@@ -360,6 +412,9 @@ function closeTab(id) {
         tabs[0].url = "";
         tabs[0].history = [];
         tabs[0].historyIndex = -1;
+        tabs[0].favorite = false;
+
+        favoriteBtn.textContent = "☆";
 
         renderTabs();
 
@@ -395,10 +450,6 @@ function closeTab(id) {
 }
 
 
-/* =========================
-   SWITCH TAB
-   ========================= */
-
 function switchTab(id) {
 
     activeTab = id;
@@ -408,6 +459,9 @@ function switchTab(id) {
     if (!tab) {
         return;
     }
+
+    favoriteBtn.textContent =
+        tab.favorite ? "★" : "☆";
 
     if (tab.url) {
 
@@ -432,6 +486,7 @@ function switchTab(id) {
     } else {
 
         showHome();
+
     }
 
     renderTabs();
@@ -540,6 +595,8 @@ function showHome() {
 
     status.textContent =
         "Ready";
+
+    favoriteBtn.textContent = "☆";
 }
 
 
